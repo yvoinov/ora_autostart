@@ -1,0 +1,68 @@
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+
+<!--  
+        Copyright 2006-2020 Yuri Voinov. All rights reserved.
+        Service manifest for oracle services.    Version 2.5
+-->
+
+<service_bundle type='manifest' name='oracle-services'>
+
+<service
+        name='application/oracle'
+        type='service'
+        version='1'>
+
+        <create_default_instance enabled='false' />
+
+        <single_instance />
+
+        <dependency name="multi-user" 
+                grouping="require_all" 
+              restart_on="error" 
+                    type="service">
+           <service_fmri value="svc:/milestone/multi-user:default"/>
+        </dependency>
+
+        <dependency name='oracle_autostart-config'
+                grouping='require_all'
+                restart_on='refresh'
+                type='path'>
+                <service_fmri value='file://localhost/etc/oracle.conf' />
+        </dependency>
+
+        <exec_method
+                type='method'
+                name='start'
+                exec='/lib/svc/method/init.oracle %m'
+                timeout_seconds='0' />
+
+        <exec_method
+                type='method'
+                name='stop'
+                exec='/lib/svc/method/init.oracle %m'
+                timeout_seconds='0' />
+
+        <exec_method
+                type='method'
+                name='restart'
+                exec='/lib/svc/method/init.oracle %m'
+                timeout_seconds='0' />
+
+        <property_group name='options' type='application'>
+                <propval name='tcp_listen' type='boolean'
+                        value='true' />
+        </property_group>
+
+        <stability value='External' />
+
+        <template>
+                <common_name>
+                        <loctext xml:lang='C'> 
+                         Oracle Database and Network Services 
+                        </loctext>
+                </common_name>
+        </template>
+</service>
+
+</service_bundle>
