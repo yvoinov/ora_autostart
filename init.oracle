@@ -7,7 +7,7 @@
 # Start/stop oracle services as part of system startup/shutdown sequence
 # using SMF or legacy rcX.d scripts (Solaris/Linux).
 #
-# Yuri Voinov (C) 2006-2020
+# Yuri Voinov (C) 2006-2023
 # Thanks Joost Mulders (Sun Microsystems) for idea
 # and initial implementation.
 #
@@ -106,20 +106,37 @@ oracle_ctl ()
   ADD_ENV_NAME="`env | $EGREP LD_PRELOAD_` | $CUT -f1 -d'='"
  fi
 
- $SU $ORACLE_UID -c "
-  ORACLE_SID=$orasid
-  ORACLE_HOME=$orahome
-  PATH=$orahome/bin:$PATH
-  LD_LIBRARY_PATH=$orahome/lib
-  LD_PRELOAD_64=$ADD_VAL
+ if [ ! -z "`uname -a | grep Linux`" ]; then
+  $SU $ORACLE_UID -c "
+   ORACLE_SID=$orasid
+   ORACLE_HOME=$orahome
+   PATH=$orahome/bin:$PATH
+   LD_LIBRARY_PATH=$orahome/lib
+   LD_PRELOAD=$ADD_VAL
 
-  export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD_64
+   export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD
 
-  \$ORACLE_HOME/bin/sqlplus \"/ as "$orapriv"\" <<EOT
-   $cmd
-   exit
-EOT
- " >> $LOG
+   \$ORACLE_HOME/bin/sqlplus \"/ as "$orapriv"\" <<EOT
+    $cmd
+    exit
+  EOT
+  " >> $LOG
+ else
+  $SU $ORACLE_UID -c "
+   ORACLE_SID=$orasid
+   ORACLE_HOME=$orahome
+   PATH=$orahome/bin:$PATH
+   LD_LIBRARY_PATH=$orahome/lib
+   LD_PRELOAD_64=$ADD_VAL
+
+   export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD_64
+
+   \$ORACLE_HOME/bin/sqlplus \"/ as "$orapriv"\" <<EOT
+    $cmd
+    exit
+  EOT
+  " >> $LOG
+ fi
 }
 
 tnslsnr_ctl ()
@@ -129,17 +146,31 @@ tnslsnr_ctl ()
  orasid=$2
  orahome=$3
 
- $SU $ORACLE_UID -c "
-  ORACLE_SID=$orasid
-  ORACLE_HOME=$orahome
-  PATH=$orahome/bin:$PATH
-  LD_LIBRARY_PATH=$orahome/lib
-  LD_PRELOAD_64=$ADD_VAL
+ if [ ! -z "`uname -a | grep Linux`" ]; then
+  $SU $ORACLE_UID -c "
+   ORACLE_SID=$orasid
+   ORACLE_HOME=$orahome
+   PATH=$orahome/bin:$PATH
+   LD_LIBRARY_PATH=$orahome/lib
+   LD_PRELOAD=$ADD_VAL
 
-  export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD_64
+   export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD
 
-  \$ORACLE_HOME/bin/lsnrctl $cmd
- " >> $LOG
+   \$ORACLE_HOME/bin/lsnrctl $cmd
+  " >> $LOG
+ else
+  $SU $ORACLE_UID -c "
+   ORACLE_SID=$orasid
+   ORACLE_HOME=$orahome
+   PATH=$orahome/bin:$PATH
+   LD_LIBRARY_PATH=$orahome/lib
+   LD_PRELOAD_64=$ADD_VAL
+
+   export ORACLE_HOME ORACLE_SID LD_LIBRARY_PATH LD_PRELOAD_64
+
+   \$ORACLE_HOME/bin/lsnrctl $cmd
+  " >> $LOG
+ fi
 }
 
 oem_ctl ()
